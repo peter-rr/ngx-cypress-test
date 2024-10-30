@@ -63,7 +63,7 @@ describe('First test suite', () => {
 
     })
 
-    it.only('save subject of the command', () => {
+    it('save subject of the command', () => {
         cy.visit('/')
         cy.contains('Forms').click()
         cy.contains('Form Layouts').click()
@@ -86,6 +86,42 @@ describe('First test suite', () => {
             cy.wrap(usingTheGridForm).find('[for="inputEmail1"]').should('contain', 'Email')
             cy.wrap(usingTheGridForm).find('[for="inputPassword2"]').should('contain', 'Password')
         })
+    })
+
+    it.only('extract text values', () => {
+        cy.visit('/')
+        cy.contains('Forms').click()
+        cy.contains('Form Layouts').click()
+
+        // 1
+        cy.get('[for="exampleInputEmail1"]').should('contain', 'Email address')
+
+        // 2
+        cy.get('[for="exampleInputEmail1"]').then( label => {
+            const labelText = label.text() // JQuery method
+            expect(labelText).to.equal('Email address') // Chai assertion only used for JQuery type of syntax
+            cy.wrap(labelText).should('contain', 'Email address')
+        })
+
+        // 3
+        cy.get('[for="exampleInputEmail1"]').invoke('text').then( text => {
+            expect(text).to.equal('Email address')
+        })
+        cy.get('[for="exampleInputEmail1"]').invoke('text').as('labelText').should('contain', 'Email address')
+
+        // 4 invoke attribute
+        cy.get('[for="exampleInputEmail1"]').invoke('attr', 'class').then( classValue => {
+            expect(classValue).to.equal('label')
+        })
+
+        // 5 invoke property -> Get the values out of an input field. Those values are hidden inside of the properties
+        cy.get('#exampleInputEmail1').type('test@test.com')
+        // cy.get('#exampleInputEmail1').should('contain', 'test@test.com') -> FAILS since the text entered is not an HTML text
+        cy.get('#exampleInputEmail1').invoke('prop', 'value').should('contain', 'test@test.com') // -> The text entered is an HTML property ('value' in this case)
+        cy.get('#exampleInputEmail1').invoke('prop', 'value').then( property => {
+            expect(property).to.equal('test@test.com')
+        })
+
     })
 
 })
