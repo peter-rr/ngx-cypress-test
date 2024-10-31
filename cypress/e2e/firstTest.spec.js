@@ -88,7 +88,7 @@ describe('First test suite', () => {
         })
     })
 
-    it.only('extract text values', () => {
+    it('extract text values', () => {
         cy.visit('/')
         cy.contains('Forms').click()
         cy.contains('Form Layouts').click()
@@ -116,12 +116,68 @@ describe('First test suite', () => {
 
         // 5 invoke property -> Get the values out of an input field. Those values are hidden inside of the properties
         cy.get('#exampleInputEmail1').type('test@test.com')
-        // cy.get('#exampleInputEmail1').should('contain', 'test@test.com') -> FAILS since the text entered is not an HTML text
+        //cy.get('#exampleInputEmail1').should('contain', 'test@test.com') -> FAILS since the text entered is not an HTML text
         cy.get('#exampleInputEmail1').invoke('prop', 'value').should('contain', 'test@test.com') // -> The text entered is an HTML property ('value' in this case)
         cy.get('#exampleInputEmail1').invoke('prop', 'value').then( property => {
             expect(property).to.equal('test@test.com')
         })
 
+    })
+
+    it('radio buttons', () => {
+        cy.visit('/')
+        cy.contains('Forms').click()
+        cy.contains('Form Layouts').click()
+
+        cy.contains('nb-card', 'Using the Grid').find('[type="radio"]').then( radioButtons => {
+            cy.wrap(radioButtons).eq(0).check({force: true}).should('be.checked')
+            cy.wrap(radioButtons).eq(1).check({force: true})
+            cy.wrap(radioButtons).eq(0).should('not.be.checked')
+            cy.wrap(radioButtons).eq(2).should('be.disabled')
+        })
+    })
+
+    it('checkboxes', () => {
+        cy.visit('/')
+        cy.contains('Modal & Overlays').click()
+        cy.contains('Toastr').click()
+
+        cy.get('[type="checkbox"]').check({force: true})
+        //cy.get('[type="checkbox"]').uncheck({force: true})
+        cy.get('[type="checkbox"]').eq(0).click({force: true})
+        cy.get('[type="checkbox"]').eq(1).check({force: true})
+    })
+
+    it.only('Date picker', () => {
+
+        function selectDayFromCurrent(days) {
+            let date = new Date() // JS object to create a more dynamic selection of the current day, avoiding selection of hardcoded days.
+            date.setDate(date.getDate() + days)
+            let futureDay = date.getDate()
+            let futureMonth = date.toLocaleDateString('en-US', {month: 'short'})
+            let futureYear = date.getFullYear()
+            let dateToAssert = `${futureMonth} ${futureDay}, ${futureYear}`    
+
+            cy.get('nb-calendar-navigation').invoke('attr', 'ng-reflect-date').then( dateAttribute => {
+                if(!dateAttribute.includes(futureMonth) || !dateAttribute.includes(futureYear)) {
+                    cy.get('[data-name="chevron-right"]').click()
+                    selectDayFromCurrent(days)
+                } else {
+                    cy.get('.day-cell').not('bounding-month').contains(futureDay).click()
+                }
+            })
+            return dateToAssert
+        }
+
+        cy.visit('/')
+        cy.contains('Forms').click()
+        cy.contains('Datepicker').click()
+        cy.contains('nb-card', 'Common Datepicker').find('input').then( input => {
+            cy.wrap(input).click()
+            const dateToAssert = selectDayFromCurrent(200)
+            cy.wrap(input).invoke('prop', 'value').should('contain', dateToAssert)
+            cy.wrap(input).should('have.value', dateToAssert)
+        })
     })
 
 })
