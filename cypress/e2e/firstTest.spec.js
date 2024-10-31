@@ -148,7 +148,7 @@ describe('First test suite', () => {
         cy.get('[type="checkbox"]').eq(1).check({force: true})
     })
 
-    it.only('Date picker', () => {
+    it('Date picker', () => {
 
         function selectDayFromCurrent(days) {
             let date = new Date() // JS object to create a more dynamic selection of the current day, avoiding selection of hardcoded days.
@@ -178,6 +178,31 @@ describe('First test suite', () => {
             cy.wrap(input).invoke('prop', 'value').should('contain', dateToAssert)
             cy.wrap(input).should('have.value', dateToAssert)
         })
+    })
+
+    it.only('Lists and dropdowns', () => {
+        cy.visit('/')
+
+        //1
+        cy.get('nav nb-select').click() // equivalent to -> cy.get('nav').find('nb-select')
+        cy.get('.options-list').contains('Dark').click()
+        cy.get('nav nb-select').should('contain', 'Dark')
+
+        //2
+        cy.get('nav nb-select').then( dropDown => {
+            cy.wrap(dropDown).click()
+            cy.get('.options-list nb-option').each( (listItem, index) => {
+                const itemText = listItem.text().trim()
+                cy.wrap(listItem).click()
+                cy.wrap(dropDown).should('contain', itemText)
+                if (index < 3) {
+                    cy.wrap(dropDown).click() // to make the list of items visible
+                }
+
+            })
+        })
+
+
     })
 
 })
