@@ -148,7 +148,7 @@ describe('First test suite', () => {
         cy.get('[type="checkbox"]').eq(1).check({force: true})
     })
 
-    it.only('Date picker', () => {
+    it('Date picker', () => {
 
         function selectDayFromCurrent(days) {
             let date = new Date() // JS object to create a more dynamic selection of the current day, avoiding selection of hardcoded days.
@@ -177,6 +177,70 @@ describe('First test suite', () => {
             const dateToAssert = selectDayFromCurrent(200)
             cy.wrap(input).invoke('prop', 'value').should('contain', dateToAssert)
             cy.wrap(input).should('have.value', dateToAssert)
+        })
+    })
+
+    it('Lists and dropdowns', () => {
+        cy.visit('/')
+
+        //1
+        cy.get('nav nb-select').click() // equivalent to -> cy.get('nav').find('nb-select')
+        cy.get('.options-list').contains('Dark').click()
+        cy.get('nav nb-select').should('contain', 'Dark')
+
+        //2
+        cy.get('nav nb-select').then( dropDown => {
+            cy.wrap(dropDown).click()
+            cy.get('.options-list nb-option').each( (listItem, index) => {
+                const itemText = listItem.text().trim()
+                cy.wrap(listItem).click()
+                cy.wrap(dropDown).should('contain', itemText)
+                if (index < 3) {
+                    cy.wrap(dropDown).click() // to make the list of items visible
+                }
+
+            })
+        })
+    })
+
+    it.only('Web tables', () => {
+        cy.visit('/')
+        cy.contains('Tables & Data').click()
+        cy.contains('Smart Table').click()
+
+        //1 Get the row by text
+        cy.get('tbody').contains('tr', 'Larry').then( tableRow => {
+            cy.wrap(tableRow).find('.nb-edit').click()
+            cy.wrap(tableRow).find('[placeholder="Age"]').clear().type('35')
+            cy.wrap(tableRow).find('.nb-checkmark').click()
+            cy.wrap(tableRow).find('td').eq(6).should('contain', '35')
+        })
+
+        //2 Get the row by index
+        cy.get('thead').find('.nb-plus').click()
+        cy.get('thead').find('tr').eq(2).then( tableRow => {
+            cy.wrap(tableRow).find('[placeholder="First Name"]').type('John')
+            cy.wrap(tableRow).find('[placeholder="Last Name"]').type('Smith')
+            cy.wrap(tableRow).find('.nb-checkmark').click()
+        })
+        cy.get('tbody tr').first().find('td').then( tableColumns => {
+            cy.wrap(tableColumns).eq(2).should('contain', 'John')
+            cy.wrap(tableColumns).eq(3).should('contain', 'Smith')
+        })
+        
+        //3 Get each row validation - looping through the table
+        const age = [20, 30, 40, 200]
+
+        cy.wrap(age).each( age => {
+            cy.get('thead [placeholder="Age"]').clear().type(age)
+            cy.wait(500)
+            cy.get('tbody tr').each( tableRow => {
+                if (age == 200) {
+                    cy.wrap(tableRow).should('contain', 'No data found')
+                } else {
+                    cy.wrap(tableRow).find('td').eq(6).should('contain', age)
+                }
+            })
         })
     })
 
