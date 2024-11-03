@@ -203,7 +203,7 @@ describe('First test suite', () => {
         })
     })
 
-    it.only('Web tables', () => {
+    it('Web tables', () => {
         cy.visit('/')
         cy.contains('Tables & Data').click()
         cy.contains('Smart Table').click()
@@ -243,5 +243,42 @@ describe('First test suite', () => {
             })
         })
     })
+
+    it('tooltips', () => {
+        cy.visit('/')
+        cy.contains('Modal & Overlays').click()
+        cy.contains('Tooltip').click()
+
+        cy.contains('nb-card', 'Colored Tooltips')
+            .contains('Default').click()
+        cy.get('nb-tooltip').should('contain', 'This is a tooltip')
+    })
+
+    it.only('dialog box', () => {
+        cy.visit('/')
+        cy.contains('Tables & Data').click()
+        cy.contains('Smart Table').click()
+
+        //1
+        cy.get('tbody tr').first().find('.nb-trash').click()
+        cy.on('window:confirm', () => {
+            expect(confirm).to.equal('Are you sure you want to delete?') // This assertion may never be executed if the window event is not triggered
+        })
+
+        //2
+        const stub = cy.stub()
+        cy.on('window:confirm', stub) // if the window did not show up the stub will be empty, so will get the right assertion (text not found)
+        cy.get('tbody tr').first().find('.nb-trash').click().then( () => {
+            expect(stub.getCall(0)).to.be.calledWith('Are you sure you want to delete?')
+        })
+
+        //3
+        cy.get('tbody tr').first().find('.nb-trash').click()
+        cy.on('window:confirm', () => false ) // if we want Cypress not automatically confirm, so we want to select 'Cancel' on this dialog box
+
+
+    })
+
+
 
 })
