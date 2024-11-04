@@ -267,7 +267,7 @@ describe('First test suite', () => {
 
         //2
         const stub = cy.stub()
-        cy.on('window:confirm', stub) // if the window did not show up the stub will be empty, so will get the right assertion (text not found)
+        cy.on('window:confirm', stub) // if the window did not show up the stub will be empty, so it will get the right assertion (text not found)
         cy.get('tbody tr').first().find('.nb-trash').click().then( () => {
             expect(stub.getCall(0)).to.be.calledWith('Are you sure you want to delete?')
         })
