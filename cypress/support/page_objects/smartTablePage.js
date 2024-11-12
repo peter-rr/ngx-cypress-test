@@ -1,4 +1,3 @@
-import { last } from "rxjs-compat/operator/last"
 
 export class SmartTablePage {
 
@@ -31,7 +30,7 @@ export class SmartTablePage {
             expect(stub.getCall(0)).to.be.calledWith('Are you sure you want to delete?')
         })
     }
-     
+
 }
 
 export const onSmartTablePage = new SmartTablePage()
